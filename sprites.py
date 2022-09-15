@@ -1,5 +1,3 @@
-from secrets import choice
-from tokenize import group
 import pygame
 from settings import *
 from random import randint, random
@@ -14,6 +12,13 @@ class Generic(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft = pos)
         self.z = z
         self.hitbox = self.rect.copy().inflate(-self.rect.width * 0.2, -self.rect.height * 0.75)
+
+
+class Interaction(Generic):
+    def __init__(self, pos, size, groups, name) -> None:
+        surf = pygame.Surface(size)
+        super().__init__(pos, surf, groups)
+        self.name = name
 
 
 class Water(Generic):
@@ -46,6 +51,7 @@ class WildFlower(Generic):
         super().__init__(pos, surf, groups)
         self.hitbox = self.rect.copy().inflate(-20, -self.rect.height * 0.9)
 
+
 class Particle(Generic):
     def __init__(self, pos, surf, groups, z, duration = 200) -> None:
         super().__init__(pos, surf, groups, z)
@@ -62,6 +68,7 @@ class Particle(Generic):
         current_time = pygame.time.get_ticks()
         if current_time - self.start_time > self.duration:
             self.kill()
+
 
 class Tree(Generic):
     def __init__(self, pos, surf, groups, name, player_add) -> None:
