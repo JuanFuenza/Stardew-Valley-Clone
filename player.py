@@ -1,7 +1,6 @@
 import pygame
 from settings import *
 from support import *
-from re import search
 from timer import Timer
 
 class Player(pygame.sprite.Sprite):
