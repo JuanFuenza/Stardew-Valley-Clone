@@ -38,6 +38,14 @@ class Level:
         self.menu = Menu(self.player, self.toggle_shop)
         self.shop_active = False
 
+        # music
+        self.success = pygame.mixer.Sound('audio/success.wav')
+        self.success.set_volume(0.3)
+
+        self.bg_music = pygame.mixer.Sound('audio/music.mp3')
+        self.bg_music.set_volume(0.05)
+        self.bg_music.play(-1)
+
     def setup(self):
         tmx_data = load_pygame('data/map.tmx')
 
@@ -117,6 +125,7 @@ class Level:
             self.player.item_inventory[item] += 5
         else:
             self.player.item_inventory[item] += 1
+            self.success.play()
 
     def toggle_shop(self):
         self.shop_active = not self.shop_active
