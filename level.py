@@ -8,7 +8,8 @@ from pytmx.util_pygame import load_pygame
 from support import *
 from transition import Transition
 from soil import SoilLayer
-from sky import Rain
+from sky import Rain, Sky
+from menu import Menu
 
 class Level:
     def __init__(self) -> None:
@@ -31,6 +32,11 @@ class Level:
         self.rain = Rain(self.all_sprites)
         self.raining = randint(0, 10) > 7
         self.soil_layer.raining = self.raining
+        self.sky = Sky()
+
+        # shop
+        self.menu = Menu(self.player, self.toggle_shop)
+        self.shop_active = False
 
     def setup(self):
         tmx_data = load_pygame('data/map.tmx')
@@ -80,10 +86,19 @@ class Level:
                                                     collision_sprites = self.collision_sprites,
                                                     tree_sprites = self.tree_sprites,
                                                     interaction = self.interaction_sprites,
-                                                    soil_layer = self.soil_layer
+                                                    soil_layer = self.soil_layer,
+                                                    toggle_shop = self.toggle_shop
                                                     )
                             
             if obj.name == 'Bed':
+                Interaction(
+                            pos = (obj.x, obj.y),
+                            size = (obj.width, obj.height),
+                            groups = self.interaction_sprites,
+                            name = obj.name
+                            )
+
+            if obj.name == 'Trader':
                 Interaction(
                             pos = (obj.x, obj.y),
                             size = (obj.width, obj.height),
@@ -103,6 +118,9 @@ class Level:
         else:
             self.player.item_inventory[item] += 1
 
+    def toggle_shop(self):
+        self.shop_active = not self.shop_active
+
     def reset(self):
         # plants
         self.soil_layer.update_plants()
@@ -120,6 +138,9 @@ class Level:
                 apple.kill()
 
             tree.create_fruit()
+        
+        # sky
+        self.sky.start_color = [255, 255 ,255]
 
     def plant_collision(self):
         if self.soil_layer.plant_sprites:
@@ -136,16 +157,23 @@ class Level:
                     self.soil_layer.grid[plant.rect.centery // TILE_SIZE][plant.rect.centerx // TILE_SIZE].remove('P')
 
     def run(self, dt):
+
+        # drawing logic
         self.display_surface.fill('black')
         self.all_sprites.custom_draw(self.player)
-        self.all_sprites.update(dt)
-        self.plant_collision()
-        
-        self.overlay.display()
 
-        # rain
-        if self.raining:
+        # updates
+        if self.shop_active:
+            self.menu.update()
+        else:
+            self.all_sprites.update(dt)
+            self.plant_collision()
+
+        # weather
+        self.overlay.display()
+        if self.raining and not self.shop_active:
             self.rain.update()
+        self.sky.display(dt)
 
         # transition overlay
         if self.player.sleep:
